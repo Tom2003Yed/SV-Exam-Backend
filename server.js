@@ -13,6 +13,10 @@ app.use(cors());
 app.use(express.json());
 
 try {
+    if (!process.env.MONGO_URI) {
+        console.log("MONGO_URI is missing!");
+        return;
+    }
     await mongoose.connect(process.env.MONGO_URI)
 
     console.log('Connected to mongoDB!');
