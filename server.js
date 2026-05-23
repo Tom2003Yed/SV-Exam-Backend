@@ -5,6 +5,7 @@ import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
 const port = process.env.PORT || 3000;
+import 'dotenv/config'
 
 const app = express();
 
@@ -12,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 try {
-    await mongoose.connect('mongodb+srv://tomyed44_db_user:4pdHXmQd4qiCmZOC@cluster0.oboss3s.mongodb.net/bubu?appName=Cluster0')
+    await mongoose.connect(process.env.MONGO_URI)
 
     console.log('Connected to mongoDB!');
 
