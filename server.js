@@ -7,6 +7,20 @@ import { generateText } from 'ai';
 
 const app = express();
 
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://sv-exam-frontend-a9fc0kq1s-tom2003yeds-projects.vercel.app'
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Blocked by CORS - Unauthorized Origin'));
+        }
+    }
+}));
 app.use(express.json());
 
 try {
@@ -44,7 +58,6 @@ await Movie.create({
 //     if (req.method === 'OPTIONS') return res.sendStatus(204);
 //     next();
 // });
-app.use(cors());
 
 app.get('/movies', async (req, res) => {
     const movies = await Movie.find();
