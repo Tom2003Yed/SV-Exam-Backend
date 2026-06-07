@@ -7,7 +7,6 @@ import { generateText } from 'ai';
 
 const app = express();
 
-app.use(cors());
 app.use(express.json());
 
 try {
@@ -15,9 +14,9 @@ try {
         console.log("MONGO_URI is missing!");
     }
     await mongoose.connect(process.env.MONGO_URI)
-
+    
     console.log('Connected to mongoDB!');
-
+    
 } catch (err) {
     console.log(err);
 }
@@ -38,13 +37,14 @@ await Movie.create({
 
 
 // לבדוק אם יעבוד לי הורסל אחרי שאני מוחק את הבלוק הזה ומזיז את הכורס בשורה 13 לפה במקום הבלוק הזה
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173, https://sv-exam-frontend-a9fc0kq1s-tom2003yeds-projects.vercel.app');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    if (req.method === 'OPTIONS') return res.sendStatus(204);
-    next();
-});
+// app.use((req, res, next) => {
+//     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173, https://sv-exam-frontend-a9fc0kq1s-tom2003yeds-projects.vercel.app');
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+//     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+//     if (req.method === 'OPTIONS') return res.sendStatus(204);
+//     next();
+// });
+app.use(cors());
 
 app.get('/movies', async (req, res) => {
     const movies = await Movie.find();
@@ -78,11 +78,11 @@ app.delete('/movies/:id', async (req, res) => {
 // מחזיר סרטים שהכותרת שלהם כוללת את הערך שנשלח.
 app.get('/movies/search', async (req, res) => {
     const { name } = req.query;
-
+    
     if (!name) {
         return res.status(400).json({ error: "Missing name query parameter" });
     }
-
+    
     const movies = await Movie.find({ title: name }); 
     
     res.json(movies);
