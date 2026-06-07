@@ -39,7 +39,7 @@ await Movie.create({
 
 // לבדוק אם יעבוד לי הורסל אחרי שאני מוחק את הבלוק הזה ומזיז את הכורס בשורה 13 לפה במקום הבלוק הזה
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173, https://sv-exam-frontend-a9fc0kq1s-tom2003yeds-projects.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') return res.sendStatus(204);
