@@ -1,13 +1,18 @@
 import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
-const port = process.env.PORT || 3000;
 import 'dotenv/config'
 import { generateText } from 'ai';
 
+const port = process.env.PORT || 3000;
 const app = express();
 
 app.use(express.json());
+
+process.env.AI_API_KEY ||= process.env.AI_GATEWAY_API_KEY || process.env.OPENAI_API_KEY;
+if (!process.env.AI_API_KEY) {
+    console.warn('AI_API_KEY / AI_GATEWAY_API_KEY is missing! AI-powered description generation will fail.');
+}
 
 try {
     if (!process.env.MONGO_URI) {
@@ -87,15 +92,39 @@ app.post('/movies/generate', async (req, res) => {
 
         const { text } = await generateText({
             model: "google/gemini-2.5-flash",
-            experimental_output: { schema: { type: 'object' } },
-            prompt: `Write a short movie description (max 200 characters) for a movie with the title "${title}" and genre "${genre}".
-Return ONLY valid JSON in this exact format, no other text:
-{"description": "your description here"}`,
+            prompt: `Write a short movie description (max 200 characters) for a movie with the title "${title}" and genre "${genre}".\n` +
+                `Return ONLY valid JSON in this exact format, no other text:\n` +
+                `{"description": "your description here"}`,
+            temperature: 0.2,
         });
 
-        const parsed = JSON.parse(text);
+        const responseText = (text ?? '').trim();
+        let description = '';
 
-        res.json({ description: parsed.description });
+        if (responseText) {
+            try {
+                const parsed = JSON.parse(responseText);
+                description = parsed.description;
+            } catch (err) {
+                const match = responseText.match(/\{[\s\S]*\}/);
+                if (match) {
+                    try {
+                        const parsed = JSON.parse(match[0]);
+                        description = parsed.description;
+                    } catch {
+                        description = responseText;
+                    }
+                } else {
+                    description = responseText;
+                }
+            }
+        }
+
+        if (!description) {
+            throw new Error('Unable to parse AI response');
+        }
+
+        res.json({ description: description.slice(0, 200) });
 
     } catch (error) {
         console.error("API Error:", error);
