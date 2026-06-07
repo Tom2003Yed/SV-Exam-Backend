@@ -79,23 +79,27 @@ app.get('/movies/search', async (req, res) => {
 
 app.post('/movies/generate', async (req, res) => {
     try {
-        const context = req.body.message;
-        console.log("context: ", context);
+        const { title, genre } = req.body;
 
-        if (!context) {
-            return res.status(400).send("Missing message in body");
+        if (!title || !genre) {
+            return res.status(400).json({ error: "Missing title or genre in body" });
         }
 
         const { text } = await generateText({
             model: "google/gemini-2.5-flash",
-            prompt: `answer the question: ${context}`,
+            experimental_output: { schema: { type: 'object' } },
+            prompt: `Write a short movie description (max 200 characters) for a movie with the title "${title}" and genre "${genre}".
+Return ONLY valid JSON in this exact format, no other text:
+{"description": "your description here"}`,
         });
 
-        res.send(text);
+        const parsed = JSON.parse(text);
+
+        res.json({ description: parsed.description });
 
     } catch (error) {
         console.error("API Error:", error);
-        res.status(500).send("Error generating response from AI");
+        res.status(500).json({ error: "Error generating response from AI" });
     }
 });
 
